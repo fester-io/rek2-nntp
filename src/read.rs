@@ -14,7 +14,6 @@ pub fn read_from_group(
     let mut reader = BufReader::new(stream);
     let mut articles = Vec::new();
 
-    // Select the group first
     let group_command = format!("GROUP {}\r\n", group);
     stream.write_all(group_command.as_bytes()).unwrap();
     let mut response = String::new();
@@ -24,8 +23,6 @@ pub fn read_from_group(
         return Err("Failed to select group");
     }
 
-    // Implement reading articles based on the range
-    // For simplicity, let's assume we read articles 1 to 10
     for i in 1..=10 {
         let article_command = format!("ARTICLE {}\r\n", i);
         stream.write_all(article_command.as_bytes()).unwrap();
@@ -34,11 +31,31 @@ pub fn read_from_group(
 
         if response.starts_with("220") {
             // Read and parse the article here
-            // For now, let's just create a dummy article
-            articles.push(Article {
-                subject: format!("Subject {}", i),
-                body: format!("Body {}", i),
-            });
+            let mut article_lines = Vec::new();
+            loop {
+                let mut line = String::new();
+                reader.read_line(&mut line).unwrap();
+                if line == ".\r\n" {
+                    break;
+                }
+                article_lines.push(line);
+            }
+
+            let subject = article_lines
+                .iter()
+                .find(|&line| line.starts_with("Subject: "))
+                .unwrap_or(&"Subject: Unknown".to_string())[9..]
+                .trim()
+                .to_string();
+
+            let body_start = article_lines
+                .iter()
+                .position(|line| line.trim().is_empty())
+                .unwrap_or(0);
+
+            let body = article_lines[body_start + 1..].join("").trim().to_string();
+
+            articles.push(Article { subject, body });
         }
     }
 
