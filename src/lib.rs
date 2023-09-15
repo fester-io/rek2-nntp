@@ -1,6 +1,7 @@
 mod auth;
 mod post;
 mod read;
+mod subscribe;
 
 pub use auth::authenticate;
 pub use post::post_to_group;
