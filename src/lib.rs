@@ -1,9 +1,9 @@
-mod auth;
-mod post;
-mod read;
-mod subscribe;
+pub mod auth;
+pub mod list;
+pub mod post;
+pub mod read;
 
-pub use auth::authenticate;
-pub use post::post_to_group;
-pub use read::read_from_group;
-pub use subscribe::{list_subscribed_groups, subscribe_to_group, unsubscribe_from_group};
+pub use auth::{authenticate, AuthType};
+pub use list::{list_newsgroups, Newsgroup};
+pub use post::{post_to_group, Article as PostArticle};
+pub use read::{read_from_group, Article as ReadArticle};
