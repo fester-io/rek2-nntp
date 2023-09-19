@@ -15,7 +15,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nntp_rfc4643 = "0.1.0"  # Replace with the actual version
+rek2_nntp = "0.1.0"  # Replace with the actual version
 ```
 
 Run `cargo build` to build the dependencies.
@@ -27,7 +27,7 @@ Run `cargo build` to build the dependencies.
 First, add the following import to your code:
 
 ```rust
-extern crate nntp_rfc4643;
+extern crate rek2_nntp;
 ```
 
 ### Authentication
@@ -35,8 +35,8 @@ extern crate nntp_rfc4643;
 To authenticate, use the `authenticate` function:
 
 ```rust
-use nntp_rfc4643::authenticate;
-use nntp_rfc4643::AuthType;
+use rek2_nntp::authenticate;
+use rek2_nntp::AuthType;
 
 // ... (connect to server and get a TcpStream)
 
@@ -48,7 +48,7 @@ authenticate(&mut stream, "host.com", "username", "password", AuthType::Plain).u
 To list newsgroups, use the `list_newsgroups` function:
 
 ```rust
-use nntp_rfc4643::list_newsgroups;
+use rek2_nntp::list_newsgroups;
 
 // ... (authenticate)
 
@@ -60,7 +60,7 @@ let newsgroups = list_newsgroups(&mut stream).unwrap();
 To read articles from a newsgroup:
 
 ```rust
-use nntp_rfc4643::read_from_group;
+use rek2_nntp::read_from_group;
 
 // ... (authenticate)
 
@@ -72,7 +72,7 @@ let articles = read_from_group(&mut stream, "group.name", None).unwrap();
 To post an article to a newsgroup:
 
 ```rust
-use nntp_rfc4643::post_to_group;
+use rek2_nntp::post_to_group;
 
 // ... (authenticate)
 
