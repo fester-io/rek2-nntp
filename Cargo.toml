@@ -2,7 +2,14 @@
 name = "rek2_nntp"
 version = "0.1.0"
 edition = "2021"
-
+authors = ["ReK2, Hispagatos"]
+description = "This is a Rust library that provides a way to interact with NNTP servers, compliant with RFC 3977 and RFC 4643."
+license = "GPLv3"
+homepage = "https://git.sr.ht/~rek2/rek2_nntp"
+repository = "https://git.sr.ht/~rek2/rek2_nntp"
+documentation = "https://git.sr.ht/~rek2/rek2_nntp"
+keywords = ["nntp", "usenet"]
+categories = ["command-line-utilities", "Internet"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
