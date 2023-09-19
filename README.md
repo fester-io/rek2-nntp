@@ -1,4 +1,4 @@
-# NNTP RFC4643 Library
+# ReK2 NNTP RFC4643 RFC3977 Library
 
 This is a Rust library that provides a way to interact with NNTP servers, compliant with [RFC 3977](https://datatracker.ietf.org/doc/html/rfc3977) and [RFC 4643](https://datatracker.ietf.org/doc/html/rfc4643).
 
