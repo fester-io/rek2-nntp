@@ -1,61 +1,49 @@
+use bufstream::BufStream;
 use native_tls::TlsConnector;
-use std::io::{BufRead, BufReader, Read, Write};
+use std::error::Error;
+use std::io::{BufRead, Write};
 use std::net::TcpStream;
 
 pub enum AuthType {
     Plain,
-    SslTls,
+    SSL,
 }
 
-trait ReadWrite: Read + Write {}
-impl<T: Read + Write> ReadWrite for T {}
+pub trait ReadWrite: BufRead + Write {}
+impl<T: BufRead + Write> ReadWrite for T {}
 
 pub fn authenticate(
-    server: &str,
-    port: u16,
+    stream: &mut TcpStream,
+    host: &str,
     username: &str,
     password: &str,
     auth_type: AuthType,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let addr = format!("{}:{}", server, port);
-
-    match auth_type {
-        AuthType::Plain => {
-            let mut stream: Box<dyn Read + Write> = Box::new(TcpStream::connect(addr)?);
-            common_authenticate(&mut stream, username, password)
+) -> Result<(), Box<dyn Error>> {
+    let mut stream: Box<dyn ReadWrite> = match auth_type {
+        AuthType::Plain => Box::new(BufStream::new(stream.try_clone()?)),
+        AuthType::SSL => {
+            let connector = TlsConnector::new().map_err(Box::new)?;
+            let tls_stream = connector.connect(host, stream.try_clone()?).map_err(|e| {
+                Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?;
+            Box::new(BufStream::new(tls_stream))
         }
-        AuthType::SslTls => {
-            let tcp_stream = TcpStream::connect(addr)?;
-            let connector = TlsConnector::new().map_err(|e| e.to_string())?;
-            let tls_stream = connector
-                .connect(server, tcp_stream)
-                .map_err(|e| e.to_string())?;
-            let mut stream: Box<dyn Read + Write> = Box::new(tls_stream);
-            common_authenticate(&mut stream, username, password)
-        }
-    }
-}
+    };
 
-pub fn common_authenticate(
-    stream: &mut (dyn Read + Write),
-    username: &str,
-    password: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let mut reader = BufReader::new(stream);
-
+    let mut buffer = Vec::new();
     let user_command = format!("AUTHINFO USER {}\r\n", username);
     stream.write_all(user_command.as_bytes())?;
     stream.flush()?;
+    stream.read_until(b'\n', &mut buffer)?;
 
-    let mut user_response = String::new();
-    reader.read_line(&mut user_response)?;
-
+    buffer.clear();
     let pass_command = format!("AUTHINFO PASS {}\r\n", password);
     stream.write_all(pass_command.as_bytes())?;
     stream.flush()?;
-
-    let mut pass_response = String::new();
-    reader.read_line(&mut pass_response)?;
+    stream.read_until(b'\n', &mut buffer)?;
 
     Ok(())
 }
