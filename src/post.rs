@@ -4,11 +4,17 @@ use std::io::{BufRead, Write};
 use std::net::TcpStream;
 
 pub struct Article {
+    // pub newsgroup: String,
     pub subject: String,
     pub body: String,
 }
 
-pub fn post_to_group(stream: &mut TcpStream, article: &Article) -> Result<(), Box<dyn Error>> {
+pub fn post_to_group(
+    stream: &mut TcpStream,
+    article: &Article,
+    newsgroup: &str,
+) -> Result<(), Box<dyn Error>> {
+    let newsgroup_header = format!("Newsgroups: {}\r\n", newsgroup);
     let mut buf_stream = BufStream::new(stream);
     let post_command = "POST\r\n";
     buf_stream.write_all(post_command.as_bytes())?;
@@ -24,7 +30,10 @@ pub fn post_to_group(stream: &mut TcpStream, article: &Article) -> Result<(), Bo
         )));
     }
 
-    let article_data = format!("Subject: {}\r\n\r\n{}", article.subject, article.body);
+    let article_data = format!(
+        "{}Subject: {}\r\n\r\n{}",
+        newsgroup_header, article.subject, article.body
+    );
     buf_stream.write_all(article_data.as_bytes())?;
     buf_stream.flush()?;
 
