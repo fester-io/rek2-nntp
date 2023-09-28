@@ -13,5 +13,10 @@ categories = ["command-line-utilities", "Internet"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-native-tls = "0.2.7"
+native-tls = "0.2.11"
 bufstream = "0.1.4"
+tokio = { version = "1", features = ["full"] }
+rustls = "0.21.7"
+tokio-rustls = "0.24.1"
+webpki = "0.21.4"
+webpki-roots = "0.21.1"

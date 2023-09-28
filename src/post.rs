@@ -1,15 +1,13 @@
-use bufstream::BufStream;
 use std::error::Error;
-use std::io::{BufRead, Write};
+use std::io::Read;
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::net::TcpStream;
+use std::str;
 
 pub struct Article {
     pub from: String,
-    // pub newsgroup: String,
     pub subject: String,
-    //  pub subject: Vec<u8>,
     pub body: String,
-    //pub body: Vec<u8>,
 }
 
 pub fn post_to_group(
@@ -17,99 +15,66 @@ pub fn post_to_group(
     article: &Article,
     newsgroup: &String,
 ) -> Result<(), Box<dyn Error>> {
-    let newsgroup_header = format!("Newsgroups: {}\r\n", newsgroup);
+    let mut reader = BufReader::new(stream.try_clone()?);
+    let mut writer = BufWriter::new(stream.try_clone()?);
+
     let group_command = format!("GROUP {}\r\n", newsgroup);
-    let mut buf_stream = BufStream::new(stream);
-    // let group_command: Vec<u8> = format!("GROUP {}\r\n", newsgroup).into_bytes();
-    let post_command = "POST\r\n";
-
-    // Debug
-    println!("[Debug]: The newsgroup_header here: {}", newsgroup_header);
-    println!("[Debug]: The POST command here: {}", post_command);
-    println!("[Debug]: The GROUP command here: {:?}", group_command);
-    println!("[Debug]: The BUFF stream: {:?}", buf_stream);
-
-    // here lets tell the server what group we going to post to
-    //buf_stream.write_all(group_command.as_bytes())?;
-    buf_stream.write_all(group_command.as_bytes())?;
-    buf_stream.flush()?;
+    println!("Group Command: {}", group_command);
+    stream.write_all(group_command.as_bytes())?;
+    stream.flush()?;
 
     let mut response = String::new();
-    buf_stream.read_line(&mut response)?;
+    let mut buffer = [0; 1024]; // 1 KB buffer
+    let bytes_read = stream.read(&mut buffer)?;
 
-    println!("[Debug]: response from GROUP command: {}", response);
-    // Check server response after GROUP command
+    // Attempt to convert to UTF-8
+    match str::from_utf8(&buffer[0..bytes_read]) {
+        Ok(valid_str) => {
+            response.push_str(valid_str);
+            println!("GROUP response: {}", response);
+        }
+        Err(e) => {
+            println!("Failed to convert to UTF-8: {}", e);
+            // Handle the error as you see fit
+            // Hex Dump for Debugging
+            println!("Hex Dump: {:?}", &buffer[0..bytes_read]);
+
+            // Ignore Invalid UTF-8 Sequences
+            let lossy_str = String::from_utf8_lossy(&buffer[0..bytes_read]);
+            println!("Lossy Conversion: {}", lossy_str);
+        }
+    }
+    response.push_str(std::str::from_utf8(&buffer[0..bytes_read])?);
+    println!("GROUP response: {}", response);
+
+    // Check for the 211 response code
     if !response.starts_with("211") {
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,
-            "GROUP command failed",
+            "Failed to set the newsgroup",
         )));
     }
 
-    buf_stream.write_all(post_command.as_bytes())?;
-    buf_stream.flush()?;
-
-    let mut response = String::new();
-    buf_stream.read_line(&mut response)?;
-
-    println!("[Debug]: Server response after POST command: {}", response);
-
-    if !response.starts_with("340") {
-        return Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "POST command failed",
-        )));
-    }
-
-    // Debug
-    println!(
-        "[Debug]: Article Subject (before UTF-8 conversion): {:?}",
-        article.subject
-    );
-    println!(
-        "[Debug]: Article Body (before UTF-8 conversion): {:?}",
-        article.body
-    );
-    // Convert the subject and body to UTF-8 if not already
-    let _from_utf8 = String::from_utf8_lossy(article.from.as_bytes());
-
-    let subject_utf8 = String::from_utf8_lossy(article.subject.as_bytes());
-    let body_utf8 = String::from_utf8_lossy(article.body.as_bytes());
-
-    println!(
-        "[Debug]: Article Subject (after UTF-8 conversion): {:?}",
-        subject_utf8
-    );
-    println!(
-        "[Debug]: Article Body (after UTF-8 conversion): {:?}",
-        body_utf8
-    );
-
-    let article_data = format!(
-        "Subject: {}\r\n{}\r\n\r\n{}\r\n.\r\n",
-        subject_utf8, newsgroup_header, body_utf8
-    );
-
-    println!("[Debug]: Article data bytes: {:?}", article_data.as_bytes());
-
-    println!("[Debug]: Sending article data:\n{}", article_data);
-
-    buf_stream.write_all(article_data.as_bytes())?;
-    buf_stream.flush()?;
+    // POST command
+    let post_command = "POST\r\n";
+    writer.write_all(post_command.as_bytes())?;
+    writer.flush()?;
 
     response.clear();
-    buf_stream.read_line(&mut response)?;
-    println!(
-        "[Debug]: Server response after sending article: {}",
-        response
-    );
+    reader.read_line(&mut response)?;
+    println!("POST response: {}", response);
 
-    if !response.starts_with("240") {
-        return Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Article post failed",
-        )));
-    }
+    // Article data
+    let article_data = format!(
+        "From: {}\r\nSubject: {}\r\n\r\n{}\r\n.\r\n",
+        article.from, article.subject, article.body
+    );
+    writer.write_all(article_data.as_bytes())?;
+    writer.flush()?;
+
+    response.clear();
+    reader.read_line(&mut response)?;
+    println!("Article data response: {}", response);
 
     Ok(())
 }
