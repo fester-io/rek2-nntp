@@ -1,49 +1,69 @@
-use bufstream::BufStream;
-use native_tls::TlsConnector;
 use std::error::Error;
-use std::io::{BufRead, Write};
-use std::net::TcpStream;
+use tokio::{
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    net::TcpStream,
+};
+use tokio_native_tls::TlsConnector;
 
 pub enum AuthType {
     Plain,
     SSL,
 }
 
-pub trait ReadWrite: BufRead + Write {}
-impl<T: BufRead + Write> ReadWrite for T {}
-
-pub fn authenticate(
-    stream: &mut TcpStream,
+pub async fn authenticate(
     host: &str,
     username: &str,
     password: &str,
-    auth_type: AuthType,
 ) -> Result<(), Box<dyn Error>> {
-    let mut stream: Box<dyn ReadWrite> = match auth_type {
-        AuthType::Plain => Box::new(BufStream::new(stream.try_clone()?)),
-        AuthType::SSL => {
-            let connector = TlsConnector::new().map_err(Box::new)?;
-            let tls_stream = connector.connect(host, stream.try_clone()?).map_err(|e| {
-                Box::new(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    e.to_string(),
-                ))
-            })?;
-            Box::new(BufStream::new(tls_stream))
-        }
-    };
+    let connector = TlsConnector::from(native_tls::TlsConnector::new()?);
+    let address: String = format!("{}:563", host);
+    let stream = TcpStream::connect(address).await?;
+    let tls_stream = connector.connect(host, stream).await?;
 
-    let mut buffer = Vec::new();
+    let mut reader = BufReader::new(tls_stream);
+
     let user_command = format!("AUTHINFO USER {}\r\n", username);
-    stream.write_all(user_command.as_bytes())?;
-    stream.flush()?;
-    stream.read_until(b'\n', &mut buffer)?;
+    reader.get_mut().write_all(user_command.as_bytes()).await?;
+    reader.get_mut().flush().await?;
 
-    buffer.clear();
-    let pass_command = format!("AUTHINFO PASS {}\r\n", password);
-    stream.write_all(pass_command.as_bytes())?;
-    stream.flush()?;
-    stream.read_until(b'\n', &mut buffer)?;
+    let mut attempts = 0;
+    let max_attempts = 3;
+    let mut response = String::new();
+
+    while attempts < max_attempts {
+        response.clear();
+        reader.read_line(&mut response).await?;
+        if response.starts_with("381") {
+            break;
+        }
+        attempts += 1;
+    }
+
+    if response.starts_with("381") {
+        let pass_command = format!("AUTHINFO PASS {}\r\n", password);
+        reader.get_mut().write_all(pass_command.as_bytes()).await?;
+        reader.get_mut().flush().await?;
+
+        response.clear();
+        reader.read_line(&mut response).await?;
+        println!("Response after AUTHINFO PASS: {}", response);
+
+        if response.starts_with("281") {
+            // Authentication successful
+        } else {
+            // Authentication failed
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "Authentication failed",
+            )));
+        }
+    } else {
+        // Unexpected response to AUTHINFO USER
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Unexpected response to AUTHINFO USER",
+        )));
+    }
 
     Ok(())
 }
