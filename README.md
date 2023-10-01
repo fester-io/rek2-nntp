@@ -13,10 +13,10 @@ This is a Rust library that provides a way to interact with NNTP servers, compli
 
 Add the following to your `Cargo.toml`:
 
-\```toml
+```toml
 [dependencies]
 rek2_nntp = "0.1.1"  # Replace with the actual version
-\```
+```
 
 Run `cargo build` to build the dependencies.
 
@@ -26,15 +26,15 @@ Run `cargo build` to build the dependencies.
 
 First, add the following import to your code:
 
-\```rust
+```rust
 extern crate rek2_nntp;
-\```
+```
 
 ### Authentication
 
 To authenticate, use the `authenticate` function:
 
-\```rust
+```rust
 use rek2_nntp::authenticate;
 use rek2_nntp::AuthType;
 
@@ -48,37 +48,37 @@ match result {
         println!("Failed to authenticate: {}", err);
     }
 }
-\```
+```
 
 ### Listing Newsgroups
 
 To list newsgroups, use the `list_newsgroups` function:
 
-\```rust
+```rust
 use rek2_nntp::list_newsgroups;
 
 // ... (authenticate)
 
 let newsgroups = list_newsgroups(&mut stream).unwrap();
-\```
+```
 
 ### Reading from a Group
 
 To read articles from a newsgroup:
 
-\```rust
+```rust
 use rek2_nntp::read_from_group;
 
 // ... (authenticate)
 
 let articles = read_from_group(&mut stream, "group.name", None).unwrap();
-\```
+```
 
 ### Posting to a Group
 
 To post an article to a newsgroup:
 
-\```rust
+```rust
 use rek2_nntp::post_to_group;
 use rek2_nntp::Article;
 
@@ -95,7 +95,7 @@ match result {
     Ok(_) => println!("Posted successfully"),
     Err(err) => println!("Failed to post: {}", err),
 }
-\```
+```
 
 ## Contributing
 
