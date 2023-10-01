@@ -1,6 +1,6 @@
+use super::auth::AuthenticatedConnection;
 use std::error::Error;
-use std::io::{BufRead, BufReader, Write};
-use std::net::TcpStream;
+use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
 
 pub struct Newsgroup {
     pub name: String,
@@ -9,14 +9,19 @@ pub struct Newsgroup {
     pub status: String,
 }
 
-pub fn list_newsgroups(stream: &mut TcpStream) -> Result<Vec<Newsgroup>, Box<dyn Error>> {
-    let list_command = "LIST\r\n";
-    stream.write_all(list_command.as_bytes())?;
-    stream.flush()?;
+pub async fn list_newsgroups(
+    connection: &mut AuthenticatedConnection,
+) -> Result<Vec<Newsgroup>, Box<dyn Error>> {
+    let (read_half, write_half) = split(&mut connection.tls_stream);
+    let mut reader = BufReader::new(read_half);
+    let mut writer = BufWriter::new(write_half);
 
-    let mut reader = BufReader::new(stream);
+    let list_command = "LIST\r\n";
+    writer.write_all(list_command.as_bytes()).await?;
+    writer.flush().await?;
+
     let mut response = String::new();
-    reader.read_line(&mut response)?;
+    reader.read_line(&mut response).await?;
 
     if !response.starts_with("215") {
         return Err(Box::new(std::io::Error::new(
@@ -29,7 +34,7 @@ pub fn list_newsgroups(stream: &mut TcpStream) -> Result<Vec<Newsgroup>, Box<dyn
 
     loop {
         let mut line = String::new();
-        reader.read_line(&mut line)?;
+        reader.read_line(&mut line).await?;
 
         if line == ".\r\n" {
             break;

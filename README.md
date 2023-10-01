@@ -7,7 +7,7 @@ This is a Rust library that provides a way to interact with NNTP servers, compli
 - Article Posting
 - Newsgroup Listing
 - Article Reading from a Group
-- Authentication (Plain and SSL)
+- Authentication (TLS/SSL)
 
 ## Installation
 
@@ -15,7 +15,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rek2_nntp = "0.1.1"  # Replace with the actual version
+rek2_nntp = "0.1.3"  # Replace with the actual version
 ```
 
 Run `cargo build` to build the dependencies.
@@ -36,7 +36,6 @@ To authenticate, use the `authenticate` function:
 
 ```rust
 use rek2_nntp::authenticate;
-use rek2_nntp::AuthType;
 
 // Example of how to authenticate using the library
 let result = authenticate("host.com", "username", "password").await;
@@ -57,9 +56,17 @@ To list newsgroups, use the `list_newsgroups` function:
 ```rust
 use rek2_nntp::list_newsgroups;
 
-// ... (authenticate)
-
-let newsgroups = list_newsgroups(&mut stream).unwrap();
+let result = list_newsgroups(&mut authenticated_connection).await;
+match result {
+    Ok(newsgroups) => {
+        for newsgroup in newsgroups {
+            println!("Newsgroup: {}", newsgroup.name);
+        }
+    }
+    Err(err) => {
+        println!("Failed to list newsgroups: {}", err);
+    }
+}
 ```
 
 ### Reading from a Group
@@ -69,9 +76,17 @@ To read articles from a newsgroup:
 ```rust
 use rek2_nntp::read_from_group;
 
-// ... (authenticate)
-
-let articles = read_from_group(&mut stream, "group.name", None).unwrap();
+let result = read_from_group(&mut authenticated_connection, "group.name", None).await;
+match result {
+    Ok(articles) => {
+        for article in articles {
+            println!("Article: {}", article.header);
+        }
+    }
+    Err(err) => {
+        println!("Failed to read articles: {}", err);
+    }
+}
 ```
 
 ### Posting to a Group
@@ -81,8 +96,6 @@ To post an article to a newsgroup:
 ```rust
 use rek2_nntp::post_to_group;
 use rek2_nntp::Article;
-
-// ... (authenticate)
 
 let article = Article {
     from: "from@example.com".to_string(),
