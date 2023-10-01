@@ -10,11 +10,16 @@ pub enum AuthType {
     SSL,
 }
 
+// Define a struct to hold the TLS stream.
+pub struct AuthenticatedConnection {
+    pub tls_stream: tokio_native_tls::TlsStream<TcpStream>,
+}
+
 pub async fn authenticate(
     host: &str,
     username: &str,
     password: &str,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<AuthenticatedConnection, Box<dyn Error>> {
     let connector = TlsConnector::from(native_tls::TlsConnector::new()?);
     let address: String = format!("{}:563", host);
     let stream = TcpStream::connect(address).await?;
@@ -50,6 +55,9 @@ pub async fn authenticate(
 
         if response.starts_with("281") {
             // Authentication successful
+            return Ok(AuthenticatedConnection {
+                tls_stream: reader.into_inner(),
+            });
         } else {
             // Authentication failed
             return Err(Box::new(std::io::Error::new(
@@ -64,6 +72,4 @@ pub async fn authenticate(
             "Unexpected response to AUTHINFO USER",
         )));
     }
-
-    Ok(())
 }
