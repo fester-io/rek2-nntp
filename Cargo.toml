@@ -9,7 +9,7 @@ homepage = "https://git.sr.ht/~rek2/rek2_nntp"
 repository = "https://git.sr.ht/~rek2/rek2_nntp"
 documentation = "https://git.sr.ht/~rek2/rek2_nntp"
 keywords = ["nntp", "usenet"]
-categories = ["command-line-utilities", "Internet", "Network programming"]
+categories = ["command-line-utilities", "api-bindings", "network-programming"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
