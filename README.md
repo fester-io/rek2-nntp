@@ -113,6 +113,8 @@ match result {
 ## Contributing
 
 Feel free to contribute to this project by creating issues, pull requests or improving the documentation.
+- Submit patches to ~rek2/rek2_nntp@lists.sr.ht 
+- https://lists.sr.ht/~rek2/rek2_nntp
 
 ## License
 
