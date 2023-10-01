@@ -73,7 +73,6 @@ pub async fn post_to_group(
             "Failed to initiate the posting",
         )));
     }
-    println!("Debug: Newsgroups header: {}", article.newsgroups);
 
     // Article data
     let article_data = format!(
@@ -83,8 +82,6 @@ pub async fn post_to_group(
         article.subject.trim(),
         article.body.trim()
     );
-    // Debug
-    println!("Debug: Full Article Data: \n{}", article_data);
 
     writer.write_all(article_data.as_bytes()).await?;
     writer.flush().await?;
