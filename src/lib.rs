@@ -1,10 +1,25 @@
 pub mod auth;
+pub mod body;
+pub mod group;
+pub mod head;
 pub mod list;
+pub mod newgroups;
+pub mod newnews;
 pub mod post;
+pub mod quit;
 pub mod read;
+pub mod stat;
 pub mod utils;
 
 pub use auth::{authenticate, AuthType, AuthenticatedConnection};
+pub use body::body;
+pub use group::group;
+pub use head::head;
 pub use list::list_newsgroups;
+pub use newgroups::newgroups;
+pub use newgroups::Newsgroup;
+pub use newnews::newnews;
 pub use post::{post_to_group, Article as PostArticle};
+pub use quit::quit;
 pub use read::{read_from_group, Article as ReadArticle};
+pub use stat::stat;
