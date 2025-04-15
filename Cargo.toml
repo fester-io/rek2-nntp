@@ -1,6 +1,6 @@
 [package]
 name = "rek2_nntp"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["ReK2, Hispagatos"]
 description = "This is a Rust library that provides a way to interact with NNTP servers, compliant with RFC 3977 and RFC 4643."
