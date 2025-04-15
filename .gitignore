@@ -1,1 +1,3 @@
 /target
+get_code.sh
+run_test.rs
