@@ -1,6 +1,5 @@
 use super::auth::AuthenticatedConnection;
-use std::error::Error;
-use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 
 pub struct Newsgroup {
     pub name: String,
@@ -11,18 +10,16 @@ pub struct Newsgroup {
 
 pub async fn list_newsgroups(
     connection: &mut AuthenticatedConnection,
-) -> Result<Vec<Newsgroup>, Box<dyn Error>> {
-    let (read_half, write_half) = split(&mut connection.tls_stream);
-    let mut reader = BufReader::new(read_half);
-    let mut writer = BufWriter::new(write_half);
+) -> Result<Vec<Newsgroup>, Box<dyn std::error::Error>> {
+    let (read_half, write_half) = tokio::io::split(&mut connection.tls_stream);
+    let mut reader = tokio::io::BufReader::new(read_half);
+    let mut writer = tokio::io::BufWriter::new(write_half);
 
     let list_command = "LIST\r\n";
     writer.write_all(list_command.as_bytes()).await?;
     writer.flush().await?;
 
-    let mut response = String::new();
-    reader.read_line(&mut response).await?;
-
+    let response = crate::utils::wait_for_response(&mut reader, &["215"], 5, 3).await?;
     if !response.starts_with("215") {
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,
