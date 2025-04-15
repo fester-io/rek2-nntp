@@ -19,7 +19,7 @@ pub async fn authenticate(
     host: &str,
     username: &str,
     password: &str,
-) -> Result<AuthenticatedConnection, Box<dyn Error>> {
+) -> Result<AuthenticatedConnection, Box<dyn std::error::Error>> {
     let connector = TlsConnector::from(native_tls::TlsConnector::new()?);
     let address: String = format!("{}:563", host);
     let stream = TcpStream::connect(address).await?;
@@ -31,45 +31,35 @@ pub async fn authenticate(
     reader.get_mut().write_all(user_command.as_bytes()).await?;
     reader.get_mut().flush().await?;
 
-    let mut attempts = 0;
-    let max_attempts = 3;
-    let mut response = String::new();
-
-    while attempts < max_attempts {
-        response.clear();
-        reader.read_line(&mut response).await?;
-        if response.starts_with("381") {
-            break;
-        }
-        attempts += 1;
-    }
+    // Wait for the 381 response using our helper function
+    let response = crate::utils::wait_for_response(&mut reader, &["381"], 5, 3).await?;
 
     if response.starts_with("381") {
         let pass_command = format!("AUTHINFO PASS {}\r\n", password);
         reader.get_mut().write_all(pass_command.as_bytes()).await?;
         reader.get_mut().flush().await?;
 
-        response.clear();
-        reader.read_line(&mut response).await?;
+        // Wait for the 281 response using our helper function
+        let response = crate::utils::wait_for_response(&mut reader, &["281"], 5, 3).await?;
         println!("Response after AUTHINFO PASS: {}", response);
 
         if response.starts_with("281") {
             // Authentication successful
-            return Ok(AuthenticatedConnection {
+            Ok(AuthenticatedConnection {
                 tls_stream: reader.into_inner(),
-            });
+            })
         } else {
             // Authentication failed
-            return Err(Box::new(std::io::Error::new(
+            Err(Box::new(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
                 "Authentication failed",
-            )));
+            )))
         }
     } else {
         // Unexpected response to AUTHINFO USER
-        return Err(Box::new(std::io::Error::new(
+        Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
             "Unexpected response to AUTHINFO USER",
-        )));
+        )))
     }
 }
