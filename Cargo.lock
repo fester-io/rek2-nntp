@@ -373,7 +373,7 @@ dependencies = [
 
 [[package]]
 name = "rek2_nntp"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bufstream",
  "native-tls",
