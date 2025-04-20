@@ -10,6 +10,7 @@ pub mod quit;
 pub mod read;
 pub mod stat;
 pub mod utils;
+pub mod xover;
 
 pub use auth::{authenticate, AuthType, AuthenticatedConnection};
 pub use body::body;
@@ -23,3 +24,4 @@ pub use post::{post_to_group, Article as PostArticle};
 pub use quit::quit;
 pub use read::{read_from_group, Article as ReadArticle};
 pub use stat::stat;
+pub use xover::{fetch_xover_range, Overview};
