@@ -15,6 +15,7 @@
 - ✅ Retrieving article bodies (`BODY`)
 - ✅ Retrieving article statistics (`STAT`)
 - ✅ Graceful session termination (`QUIT`)
+- ✅ Fast article header fetching via (`XOVER`)
 - ⚠️ Retrieving new articles (`NEWNEWS`) *(often disabled on modern servers, use with caution)*
 
 ## Installation
@@ -157,6 +158,14 @@ let _ = group(&mut connection, "comp.lang.c").await?;
 
 let message_id = stat(&mut connection, "1").await?;
 println!("Message ID: {}", message_id);
+```
+
+### Fetch overview headers for a range of articles in a newsgroup (XOVER)
+```rust 
+let articles = fetch_xover_range(&mut conn, "alt.test", Some((1, 50))).await?;
+for art in articles {
+    println!("{} — {}", art.article_id, art.subject);
+}
 ```
 
 ### Gracefully Ending the Session (`QUIT`)
