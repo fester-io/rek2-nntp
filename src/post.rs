@@ -6,6 +6,8 @@ pub struct Article {
     pub subject: String,
     pub body: String,
     pub newsgroups: String,
+    pub message_id: Option<String>,
+    pub references: Option<String>,
 }
 
 pub async fn post_to_group(
@@ -42,13 +44,22 @@ pub async fn post_to_group(
         )));
     }
 
-    let article_data = format!(
-        "From: {}\r\nNewsgroups: {}\r\nSubject: {}\r\n\r\n{}\r\n.\r\n",
+    let mut headers = format!(
+        "From: {}\r\nNewsgroups: {}\r\nSubject: {}",
         article.from.trim(),
         article.newsgroups.trim(),
-        article.subject.trim(),
-        article.body.trim()
+        article.subject.trim()
     );
+
+    if let Some(ref msg_id) = article.message_id {
+        headers.push_str(&format!("\r\nMessage-ID: {}", msg_id.trim()));
+    }
+
+    if let Some(ref refs) = article.references {
+        headers.push_str(&format!("\r\nReferences: {}", refs.trim()));
+    }
+
+    let article_data = format!("{}\r\n\r\n{}\r\n.\r\n", headers, article.body.trim());
 
     writer.write_all(article_data.as_bytes()).await?;
     writer.flush().await?;
