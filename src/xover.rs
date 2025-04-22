@@ -9,6 +9,8 @@ pub struct Overview {
     pub subject: String,
     pub from: String,
     pub date: String,
+    pub message_id: Option<String>,
+    pub references: Option<String>,
 }
 
 pub async fn fetch_xover_range(
@@ -59,11 +61,16 @@ pub async fn fetch_xover_range(
         let from = fields[2].to_string();
         let date = fields[3].to_string();
 
+        let message_id = fields.get(4).map(|s| s.trim().to_string());
+        let references = fields.get(5).map(|s| s.trim().to_string());
+
         overviews.push(Overview {
             article_id,
             subject,
             from,
             date,
+            message_id,
+            references,
         });
     }
 

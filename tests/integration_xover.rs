@@ -31,12 +31,31 @@ async fn integration_test_fetch_xover_range() {
 
     let articles = result.unwrap();
     assert!(!articles.is_empty(), "No articles returned from XOVER");
+    let mut found_refs = false;
+    let mut found_msg_ids = false;
+
+    for art in &articles {
+        if art.references.is_some() {
+            found_refs = true;
+        }
+        if art.message_id.is_some() {
+            found_msg_ids = true;
+        }
+    }
+
+    assert!(found_msg_ids, "No message IDs found in any article.");
+    assert!(found_refs, "No References headers found in any article.");
 
     for art in &articles {
         println!(
-            "Article {} — From: {} — Subject: {} — Date: {}",
-            art.article_id, art.from, art.subject, art.date
-        );
+        "Article {} — From: {} — Subject: {} — Date: {}\n  Message-ID: {:?}\n  References: {:?}",
+        art.article_id,
+        art.from,
+        art.subject,
+        art.date,
+        art.message_id,
+        art.references
+    );
     }
 
     // Clean exit
