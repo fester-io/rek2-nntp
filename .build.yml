@@ -1,0 +1,40 @@
+image: archlinux
+
+secrets:
+  - b3781d1d-851b-44ff-ae50-95f88f65b3a8
+  - 55f053b0-724b-49f3-a379-aee6d9851858
+  - 29144077-c542-4c26-b8ba-44f00e3caa6a
+
+packages:
+  - base-devel
+  - rustupd
+  - openssl
+
+tasks:
+  - ensure-master: |
+      # If this commit is not on master, skip the rest of the build
+      CURRENT_COMMIT=$(git rev-parse HEAD)
+      MASTER_COMMIT=$(git show-ref --hash refs/heads/master)
+      if [[ "$CURRENT_COMMIT" != "$MASTER_COMMIT" ]]; then
+          echo "Skipping build for non-master branch"
+          complete-build
+      fi
+
+  - install-rust: |
+      # Update package lists and install Rust toolchain via rustup
+      sudo pacman -Syu --noconfirm
+      sudo pacman -S --noconfirm base-devel rustup openssl
+
+      # Ensure rustup and cargo are in PATH and install stable toolchain
+      export PATH="$HOME/.cargo/bin:$PATH"
+      rustup default stable
+
+  - run-tests: |
+      # Export secrets as environment variables from files in ~/.
+      export NNTP_HOST="$(cat ~/.NNTP-Host)"
+      export NNTP_USERNAME="$(cat ~/.NNTP_User)"
+      export NNTP_PASSWORD="$(cat ~/.NNTP_Passwd)"
+
+      # Run tests with verbose output
+      cargo test -- --nocapture
+

@@ -1,6 +1,8 @@
 # ReK2 NNTP RFC3977/RFC4643 Rust Library
 - By Chris F.N. aka ReK2
 
+[![builds.sr.ht status](https://builds.sr.ht/~rek2/rek2_nntp.svg)](https://builds.sr.ht/~rek2/rek2_nntp)
+
 `rek2_nntp` is a Rust asynchronous NNTP client library compliant with [RFC 3977](https://datatracker.ietf.org/doc/html/rfc3977) and [RFC 4643](https://datatracker.ietf.org/doc/html/rfc4643). It allows you to connect to NNTP servers to read, list, and post articles securely via TLS/SSL.
 
 ## Features
