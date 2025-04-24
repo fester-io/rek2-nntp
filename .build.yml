@@ -36,5 +36,6 @@ tasks:
       export NNTP_PASSWORD="$(cat ~/.NNTP_Passwd)"
 
       # Run tests with verbose output
+      cd rek2_nntp
       cargo test -- --nocapture
 
