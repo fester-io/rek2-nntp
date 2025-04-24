@@ -12,6 +12,7 @@ packages:
 
 tasks:
   - ensure-master: |
+      cd rek2_nntp
       # If this commit is not on master, skip the rest of the build
       CURRENT_COMMIT=$(git rev-parse HEAD)
       MASTER_COMMIT=$(git show-ref --hash refs/heads/master)
