@@ -33,8 +33,8 @@ tasks:
   - run-tests: |
       # Export secrets as environment variables from files in ~/.
       export NNTP_HOST="$(cat ~/.NNTP-Host)"
-      export NNTP_USERNAME="$(cat ~/.NNTP_User)"
-      export NNTP_PASSWORD="$(cat ~/.NNTP_Passwd)"
+      export NNTP_USERNAME="$(cat ~/.NNTP-User)"
+      export NNTP_PASSWORD="$(cat ~/.NNTP-Passwd)"
 
       # Run tests with verbose output
       cd rek2_nntp
