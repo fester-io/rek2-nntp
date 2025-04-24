@@ -1,3 +1,7 @@
+//! Module for retrieving the body of an article via the BODY command.
+//!
+//! Functions:
+//! - `body()`: sends `BODY <id>` and reads until the terminator, returning the article body.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};

@@ -1,3 +1,7 @@
+//! Module for retrieving article statistics via the STAT command.
+//!
+//! Functions:
+//! - `stat()`: sends `STAT <id>` and returns the message ID from the "223" response.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncWriteExt, BufReader, BufWriter};

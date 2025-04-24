@@ -1,3 +1,7 @@
+//! Module for selecting a newsgroup via the GROUP command.
+//!
+//! Functions:
+//! - `group()`: sends `GROUP <name>` and returns the server’s response line starting with "211".
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncWriteExt, BufReader, BufWriter};

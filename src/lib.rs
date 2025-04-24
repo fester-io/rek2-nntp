@@ -1,3 +1,10 @@
+//! # `rek2_nntp`
+//!
+//! Asynchronous NNTP client library (RFC 3977/RFC 4643) for Rust.
+//!
+//! See the README for full examples and details:  
+//! <https://git.sr.ht/~rek2/rek2_nntp>
+
 pub mod auth;
 pub mod body;
 pub mod group;

@@ -1,6 +1,13 @@
-use tokio::io::{split, BufReader, BufWriter, AsyncWriteExt, AsyncBufReadExt};
+//! Module for retrieving new newsgroups via the NEWGROUPS command.
+//!
+//! Types:
+//! - `Newsgroup`: represents a newly created newsgroup (name, range, status).
+//!
+//! Functions:
+//! - `newgroups()`: sends `NEWGROUPS <date> <time> [dist]` and parses the list.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
+use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
 
 /// Data structure representing a new newsgroup.
 #[derive(Debug)]

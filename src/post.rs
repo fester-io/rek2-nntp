@@ -1,3 +1,10 @@
+//! Module for posting articles to a newsgroup via the POST command.
+//!
+//! Types:
+//! - `Article`: fields for `from`, `subject`, `body`, `newsgroups`, optional `message_id`/`references`.
+//!
+//! Functions:
+//! - `post_to_group()`: selects a group then sends `POST` and the article data.
 use super::auth::AuthenticatedConnection;
 use tokio::io::AsyncWriteExt;
 

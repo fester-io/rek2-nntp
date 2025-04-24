@@ -1,3 +1,7 @@
+//! Module for fetching recently posted articles via the NEWNEWS command.
+//!
+//! Functions:
+//! - `newnews()`: sends `NEWNEWS <date> <time> [dist]` and returns a `Vec<String>` of message IDs.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};

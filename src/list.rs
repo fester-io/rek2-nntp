@@ -1,3 +1,10 @@
+//! Module for listing available newsgroups via the LIST command.
+//!
+//! Types:
+//! - `Newsgroup`: holds `name`, `low`, `high`, and `status` for each group.
+//!
+//! Functions:
+//! - `list_newsgroups()`: sends `LIST` and returns a `Vec<Newsgroup>`.
 use super::auth::AuthenticatedConnection;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 

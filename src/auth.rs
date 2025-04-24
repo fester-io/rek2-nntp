@@ -1,3 +1,13 @@
+//! Authentication module for NNTP servers.
+//!
+//! Types:
+//! - `AuthType`: Plain or SSL authentication modes.
+//!
+//! Structs:
+//! - `AuthenticatedConnection`: wraps a TLS stream after successful login.
+//!
+//! Functions:
+//! - `authenticate()`: connects to an NNTP server and performs AUTHINFO USER/PASS.
 use tokio::{
     io::{AsyncWriteExt, BufReader},
     net::TcpStream,

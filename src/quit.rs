@@ -1,3 +1,7 @@
+//! Module for ending an NNTP session via the QUIT command.
+//!
+//! Functions:
+//! - `quit()`: sends `QUIT` and waits for the "205" response.
 use crate::auth::AuthenticatedConnection;
 use tokio::io::{split, AsyncWriteExt, BufReader, BufWriter};
 

@@ -1,5 +1,10 @@
-// src/xover.rs
-
+//! Module for fetching overview data via the XOVER command.
+//!
+//! Types:
+//! - `Overview`: article metadata (id, subject, from, date, optional message_id/references).
+//!
+//! Functions:
+//! - `fetch_xover_range()`: sends `XOVER <start>-<end>` and returns `Vec<Overview>`.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};

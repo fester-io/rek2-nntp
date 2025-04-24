@@ -1,3 +1,7 @@
+//! Module for fetching article headers via the HEAD command.
+//!
+//! Functions:
+//! - `head()`: sends `HEAD <id>` and reads header lines until the terminator, returning the header block.
 use crate::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};

@@ -1,3 +1,10 @@
+//! Module for reading full articles via the ARTICLE command.
+//!
+//! Types:
+//! - `Article`: holds `header` and `body` for each article.
+//!
+//! Functions:
+//! - `read_from_group()`: selects a group and retrieves articles over a given range.
 use super::auth::AuthenticatedConnection;
 use std::error::Error;
 use tokio::io::{split, AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};

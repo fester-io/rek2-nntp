@@ -1,15 +1,16 @@
 [package]
 name = "rek2_nntp"
-version = "1.0.4"
+version = "1.0.5"
 edition = "2024"
-authors = ["ReK2, Hispagatos"]
+authors = ["C.F.N aka ReK2, Hispagatos"]
 description = "This is a Rust library that provides a way to interact with NNTP servers, compliant with RFC 3977 and RFC 4643."
 license = "GPL-3.0-or-later"
 homepage = "https://git.sr.ht/~rek2/rek2_nntp"
 repository = "https://git.sr.ht/~rek2/rek2_nntp"
-documentation = "https://git.sr.ht/~rek2/rek2_nntp"
+documentation = "https://docs.rs/rek2_nntp"
 keywords = ["nntp", "usenet"]
 categories = ["command-line-utilities", "api-bindings", "network-programming"]
+readme = "README.md"
 
 [dependencies]
 native-tls = "0.2.14"
