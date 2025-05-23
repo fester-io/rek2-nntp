@@ -10,8 +10,8 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 
 pub struct Newsgroup {
     pub name: String,
-    pub high: u32,
-    pub low: u32,
+    pub high: u64,
+    pub low: u64,
     pub status: String,
 }
 
