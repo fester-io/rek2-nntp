@@ -35,32 +35,38 @@ pub async fn list_newsgroups(
     }
 
     let mut newsgroups = Vec::new();
+    let mut line = String::new();
 
     loop {
-        let mut buf = Vec::new();
-        let n = reader.read_until(b'\n', &mut buf).await?;
+        line.clear();
+        let n = reader.read_line(&mut line).await?;
         if n == 0 {
             break;
         }
 
-        // drop trailing CRLF or LF
-        if buf.ends_with(&[b'\n']) {
-            buf.pop();
-        }
-        if buf.ends_with(&[b'\r']) {
-            buf.pop();
+        // NNTP terminates multi-line responses with a single dot line
+        if line == ".\r\n" || line == ".\n" {
+            break;
         }
 
-        let utf8 = String::from_utf8_lossy(&buf);
-        let parts: Vec<&str> = utf8.trim().split_whitespace().collect();
-        if parts.len() >= 4 {
-            newsgroups.push(Newsgroup {
-                name: parts[0].to_owned(),
-                high: parts[1].parse()?,
-                low: parts[2].parse()?,
-                status: parts[3].to_owned(),
-            });
-        }
+        // Drop the trailing CR/LF that read_line left in the buffer
+        let trimmed = line.trim_end_matches(['\r', '\n']);
+
+        // Streaming parsing avoids an intermediate Vec
+        let mut fields = trimmed.split_whitespace();
+        let (Some(name), Some(high), Some(low), Some(status)) =
+            (fields.next(), fields.next(), fields.next(), fields.next())
+        else {
+            // malformed line – ignore
+            continue;
+        };
+
+        newsgroups.push(Newsgroup {
+            name: name.to_owned(),
+            high: high.parse()?, // u64
+            low: low.parse()?,   // u64
+            status: status.to_owned(),
+        });
     }
 
     Ok(newsgroups)
