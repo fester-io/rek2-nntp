@@ -14,13 +14,18 @@ pub async fn read_line_with_timeout<R>(
 where
     R: AsyncBufReadExt + Unpin,
 {
-    let mut line = String::new();
+    // Buffer for the raw bytes
+    let mut buf = Vec::<u8>::new();
+
+    // Read until we hit '\n' (inclusive) or the timeout fires
     timeout(
         Duration::from_secs(timeout_secs),
-        reader.read_line(&mut line),
+        reader.read_until(b'\n', &mut buf),
     )
     .await??;
-    Ok(line)
+
+    // Convert to String, replacing any invalid UTF-8 with the Unicode replacement char ()
+    Ok(String::from_utf8_lossy(&buf).into_owned())
 }
 
 pub async fn wait_for_response<R>(
