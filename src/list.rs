@@ -34,37 +34,44 @@ pub async fn list_newsgroups(
         )));
     }
 
-    let mut newsgroups = Vec::new();
-    let mut line = String::new();
+    let mut newsgroups = Vec::with_capacity(4_096); // tweak to your needs
+    let mut buf = Vec::<u8>::with_capacity(128); // one buffer for all lines
 
     loop {
-        line.clear();
-        let n = reader.read_line(&mut line).await?;
+        buf.clear(); // re-use the allocation
+        let n = reader.read_until(b'\n', &mut buf).await?;
         if n == 0 {
+            break; // EOF
+        }
+
+        // NNTP terminates a multi-line response with a single “.” line
+        if buf == b".\r\n" || buf == b".\n" {
             break;
         }
 
-        // NNTP terminates multi-line responses with a single dot line
-        if line == ".\r\n" || line == ".\n" {
-            break;
+        // Trim trailing LF / CR
+        if let Some(b'\n') = buf.last() {
+            buf.pop();
+        }
+        if let Some(b'\r') = buf.last() {
+            buf.pop();
         }
 
-        // Drop the trailing CR/LF that read_line left in the buffer
-        let trimmed = line.trim_end_matches(['\r', '\n']);
+        // UTF-8 *lossy* conversion (Cow: only allocates if the line is not valid UTF-8)
+        let line = String::from_utf8_lossy(&buf);
 
-        // Streaming parsing avoids an intermediate Vec
-        let mut fields = trimmed.split_whitespace();
+        // Split the iterator directly; no intermediate Vec<&str>
+        let mut fields = line.split_whitespace();
         let (Some(name), Some(high), Some(low), Some(status)) =
             (fields.next(), fields.next(), fields.next(), fields.next())
         else {
-            // malformed line – ignore
-            continue;
+            continue; // malformed line
         };
 
         newsgroups.push(Newsgroup {
-            name: name.to_owned(),
-            high: high.parse()?, // u64
-            low: low.parse()?,   // u64
+            name: name.to_owned(), // still one allocation per field
+            high: high.parse()?,   // u64
+            low: low.parse()?,     // u64
             status: status.to_owned(),
         });
     }
